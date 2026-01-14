@@ -3,6 +3,7 @@ File frappe/hooks.py định nghĩa các cấu hình và “điểm móc” (hoo
 Các app khác (ERPNext, custom app) cũng có hooks.py với cấu trúc tương tự, nhưng frappe/hooks.py là “chuẩn gốc” để tham khảo.
 Dưới đây là giải thích theo từng nhóm chức năng:
 1. Thông tin ứng dụng
+
 app_name = "frappe"
 app_title = "Frappe Framework"
 app_publisher = "Frappe Technologies"
