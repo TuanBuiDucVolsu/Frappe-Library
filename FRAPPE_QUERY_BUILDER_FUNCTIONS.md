@@ -19,13 +19,13 @@ from frappe.query_builder import functions as fn
 File `functions.py` import `from pypika.functions import *`, nghĩa là **tất cả** các SQL functions từ PyPika đều có sẵn:
 
 ### 1.1. Aggregate Functions
-- `Count(term, alias=None)` - COUNT()
-- `Sum(term, alias=None)` - SUM()
-- `Avg(term, alias=None)` - AVG()
-- `Max(term, alias=None)` - MAX()
-- `Min(term, alias=None)` - MIN()
-- `StdDev(term, alias=None)` - STDDEV()
-- `Variance(term, alias=None)` - VARIANCE()
+- `Count(term, alias=None)` - COUNT() - **Đếm số lượng bản ghi** (hoặc số giá trị khác NULL)
+- `Sum(term, alias=None)` - SUM() - **Tính tổng** các giá trị số
+- `Avg(term, alias=None)` - AVG() - **Tính trung bình** các giá trị số
+- `Max(term, alias=None)` - MAX() - **Tìm giá trị lớn nhất**
+- `Min(term, alias=None)` - MIN() - **Tìm giá trị nhỏ nhất**
+- `StdDev(term, alias=None)` - STDDEV() - **Tính độ lệch chuẩn** (standard deviation)
+- `Variance(term, alias=None)` - VARIANCE() - **Tính phương sai** (variance)
 
 **Ví dụ:**
 ```python
@@ -42,14 +42,14 @@ q = frappe.qb.from_(Order).select(
 ```
 
 ### 1.2. Mathematical Functions
-- `Abs(term, alias=None)` - ABS()
-- `Round(term, decimals=0, alias=None)` - ROUND()
-- `Floor(term, alias=None)` - FLOOR()
-- `Ceil(term, alias=None)` - CEIL()
-- `Sqrt(term, alias=None)` - SQRT()
-- `Power(term, exponent, alias=None)` - POWER()
-- `Mod(term, divisor, alias=None)` - MOD()
-- `Sign(term, alias=None)` - SIGN()
+- `Abs(term, alias=None)` - ABS() - **Lấy giá trị tuyệt đối** (bỏ dấu âm)
+- `Round(term, decimals=0, alias=None)` - ROUND() - **Làm tròn** số đến số chữ số thập phân chỉ định
+- `Floor(term, alias=None)` - FLOOR() - **Làm tròn xuống** (số nguyên nhỏ hơn gần nhất)
+- `Ceil(term, alias=None)` - CEIL() - **Làm tròn lên** (số nguyên lớn hơn gần nhất)
+- `Sqrt(term, alias=None)` - SQRT() - **Tính căn bậc hai**
+- `Power(term, exponent, alias=None)` - POWER() - **Tính lũy thừa** (term^exponent)
+- `Mod(term, divisor, alias=None)` - MOD() - **Tính số dư** của phép chia (modulo)
+- `Sign(term, alias=None)` - SIGN() - **Trả về dấu** của số (-1 nếu âm, 0 nếu bằng 0, 1 nếu dương)
 
 **Ví dụ:**
 ```python
@@ -67,18 +67,18 @@ q = frappe.qb.from_(Item).select(
 ```
 
 ### 1.3. String Functions
-- `Upper(term, alias=None)` - UPPER()
-- `Lower(term, alias=None)` - LOWER()
-- `Length(term, alias=None)` - LENGTH()
-- `Trim(term, alias=None)` - TRIM()
-- `LTrim(term, alias=None)` - LTRIM()
-- `RTrim(term, alias=None)` - RTRIM()
-- `Replace(term, old, new, alias=None)` - REPLACE()
-- `Substring(term, start, length=None, alias=None)` - SUBSTRING()
-- `Concat(*terms, alias=None)` - CONCAT()
-- `Coalesce(*terms, alias=None)` - COALESCE()
-- `IfNull(term, default, alias=None)` - IFNULL()
-- `NullIf(term1, term2, alias=None)` - NULLIF()
+- `Upper(term, alias=None)` - UPPER() - **Chuyển chuỗi thành chữ HOA**
+- `Lower(term, alias=None)` - LOWER() - **Chuyển chuỗi thành chữ thường**
+- `Length(term, alias=None)` - LENGTH() - **Đếm số ký tự** trong chuỗi
+- `Trim(term, alias=None)` - TRIM() - **Xóa khoảng trắng** ở đầu và cuối chuỗi
+- `LTrim(term, alias=None)` - LTRIM() - **Xóa khoảng trắng** ở đầu chuỗi (bên trái)
+- `RTrim(term, alias=None)` - RTRIM() - **Xóa khoảng trắng** ở cuối chuỗi (bên phải)
+- `Replace(term, old, new, alias=None)` - REPLACE() - **Thay thế** tất cả chuỗi `old` bằng `new` trong `term`
+- `Substring(term, start, length=None, alias=None)` - SUBSTRING() - **Cắt chuỗi con** từ vị trí `start` với độ dài `length`
+- `Concat(*terms, alias=None)` - CONCAT() - **Nối nhiều chuỗi** lại với nhau
+- `Coalesce(*terms, alias=None)` - COALESCE() - **Trả về giá trị đầu tiên khác NULL** trong danh sách
+- `IfNull(term, default, alias=None)` - IFNULL() - **Nếu `term` là NULL thì trả về `default`, ngược lại trả về `term`**
+- `NullIf(term1, term2, alias=None)` - NULLIF() - **Nếu `term1` = `term2` thì trả về NULL, ngược lại trả về `term1`**
 
 **Ví dụ:**
 ```python
@@ -97,27 +97,27 @@ q = frappe.qb.from_(Customer).select(
 ```
 
 ### 1.4. Date/Time Functions
-- `Now(alias=None)` - NOW()
-- `CurrentDate(alias=None)` - CURRENT_DATE()
-- `CurrentTime(alias=None)` - CURRENT_TIME()
-- `CurrentTimestamp(alias=None)` - CURRENT_TIMESTAMP()
-- `Date(term, alias=None)` - DATE()
-- `Time(term, alias=None)` - TIME()
-- `DateAdd(term, interval, alias=None)` - DATE_ADD()
-- `DateSub(term, interval, alias=None)` - DATE_SUB()
-- `DateDiff(term1, term2, alias=None)` - DATEDIFF()
-- `Year(term, alias=None)` - YEAR()
-- `Month(term, alias=None)` - MONTH()
-- `Day(term, alias=None)` - DAY()
-- `Hour(term, alias=None)` - HOUR()
-- `Minute(term, alias=None)` - MINUTE()
-- `Second(term, alias=None)` - SECOND()
-- `Week(term, alias=None)` - WEEK()
-- `Weekday(term, alias=None)` - WEEKDAY()
-- `DayOfWeek(term, alias=None)` - DAYOFWEEK()
-- `DayOfYear(term, alias=None)` - DAYOFYEAR()
-- `Extract(part, term, alias=None)` - EXTRACT()
-- `Format(term, format_string, alias=None)` - FORMAT()
+- `Now(alias=None)` - NOW() - **Trả về ngày giờ hiện tại** (datetime)
+- `CurrentDate(alias=None)` - CURRENT_DATE() - **Trả về ngày hiện tại** (chỉ date, không có time)
+- `CurrentTime(alias=None)` - CURRENT_TIME() - **Trả về giờ hiện tại** (chỉ time, không có date)
+- `CurrentTimestamp(alias=None)` - CURRENT_TIMESTAMP() - **Trả về timestamp hiện tại** (giống NOW())
+- `Date(term, alias=None)` - DATE() - **Trích xuất phần date** từ datetime
+- `Time(term, alias=None)` - TIME() - **Trích xuất phần time** từ datetime
+- `DateAdd(term, interval, alias=None)` - DATE_ADD() - **Cộng thêm** một khoảng thời gian vào date/datetime
+- `DateSub(term, interval, alias=None)` - DATE_SUB() - **Trừ đi** một khoảng thời gian từ date/datetime
+- `DateDiff(term1, term2, alias=None)` - DATEDIFF() - **Tính số ngày chênh lệch** giữa 2 date (term1 - term2)
+- `Year(term, alias=None)` - YEAR() - **Trích xuất năm** từ date/datetime
+- `Month(term, alias=None)` - MONTH() - **Trích xuất tháng** (1-12) từ date/datetime
+- `Day(term, alias=None)` - DAY() - **Trích xuất ngày** (1-31) từ date/datetime
+- `Hour(term, alias=None)` - HOUR() - **Trích xuất giờ** (0-23) từ time/datetime
+- `Minute(term, alias=None)` - MINUTE() - **Trích xuất phút** (0-59) từ time/datetime
+- `Second(term, alias=None)` - SECOND() - **Trích xuất giây** (0-59) từ time/datetime
+- `Week(term, alias=None)` - WEEK() - **Trích xuất số tuần** trong năm (1-53)
+- `Weekday(term, alias=None)` - WEEKDAY() - **Trả về thứ trong tuần** (0=Monday, 6=Sunday)
+- `DayOfWeek(term, alias=None)` - DAYOFWEEK() - **Trả về thứ trong tuần** (1=Sunday, 7=Saturday)
+- `DayOfYear(term, alias=None)` - DAYOFYEAR() - **Trả về ngày thứ mấy trong năm** (1-366)
+- `Extract(part, term, alias=None)` - EXTRACT() - **Trích xuất phần cụ thể** (year, month, day, hour, ...) từ date/datetime
+- `Format(term, format_string, alias=None)` - FORMAT() - **Format số** theo định dạng (ví dụ: 1000.5 → "1,000.50")
 
 **Ví dụ:**
 ```python
@@ -135,8 +135,8 @@ q = frappe.qb.from_(Order).select(
 ```
 
 ### 1.5. Type Conversion Functions
-- `Cast(term, as_type, alias=None)` - CAST()
-- `Convert(term, as_type, alias=None)` - CONVERT()
+- `Cast(term, as_type, alias=None)` - CAST() - **Chuyển đổi kiểu dữ liệu** của `term` sang `as_type` (ví dụ: VARCHAR, INT, DATE)
+- `Convert(term, as_type, alias=None)` - CONVERT() - **Chuyển đổi kiểu dữ liệu** (tương tự CAST, nhưng syntax khác một chút)
 
 **Ví dụ:**
 ```python
@@ -150,7 +150,7 @@ q = frappe.qb.from_(Item).select(
 ```
 
 ### 1.6. Conditional Functions
-- `Case()` - CASE WHEN statement
+- `Case()` - CASE WHEN statement - **Câu lệnh điều kiện** (if-else trong SQL), trả về giá trị khác nhau tùy theo điều kiện
 
 **Ví dụ:**
 ```python
@@ -172,7 +172,7 @@ q = frappe.qb.from_(Order).select(
 ## 🔷 2. Custom Functions của Frappe
 
 ### 2.1. `Concat_ws(*terms, **kwargs)`
-CONCAT với separator (CONCAT_WS).
+CONCAT với separator (CONCAT_WS) - **Nối nhiều chuỗi lại với nhau, cách nhau bởi separator** (ví dụ: "A", "B", "C" → "A-B-C" với separator là "-")
 
 **Signature:**
 ```python
@@ -195,7 +195,7 @@ q = frappe.qb.from_(Customer).select(
 ---
 
 ### 2.2. `Locate(needle, haystack, **kwargs)`
-Tìm vị trí của `needle` trong `haystack`.
+Tìm vị trí của `needle` trong `haystack` - **Trả về vị trí (index) đầu tiên** mà `needle` xuất hiện trong `haystack` (bắt đầu từ 1, trả về 0 nếu không tìm thấy)
 
 **Tự động chọn function phù hợp theo database:**
 - **MariaDB**: `LOCATE(needle, haystack)`
@@ -228,7 +228,7 @@ q = frappe.qb.from_(Customer).select(
 ---
 
 ### 2.3. `Ifnull(term, default, **kwargs)` / `IfNull(term, default, **kwargs)`
-IFNULL function (backward compatibility alias).
+IFNULL function (backward compatibility alias) - **Nếu `term` là NULL thì trả về `default`, ngược lại trả về `term`** (giống Coalesce với 2 tham số)
 
 **Signature:**
 ```python
@@ -249,7 +249,7 @@ q = frappe.qb.from_(Customer).select(
 ---
 
 ### 2.4. `Timestamp(term, time=None, alias=None)`
-TIMESTAMP function.
+TIMESTAMP function - **Kết hợp date và time thành datetime**, hoặc chuyển đổi string thành datetime
 
 **Signature:**
 ```python
@@ -275,7 +275,7 @@ q = frappe.qb.from_(Order).select(
 ---
 
 ### 2.5. `Round(term, decimal=0, **kwargs)`
-ROUND function với số chữ số thập phân.
+ROUND function với số chữ số thập phân - **Làm tròn số** đến số chữ số thập phân chỉ định (ví dụ: Round(3.14159, 2) → 3.14)
 
 **Signature:**
 ```python
@@ -299,7 +299,7 @@ q = frappe.qb.from_(Item).select(
 ---
 
 ### 2.6. `Truncate(term, decimal, **kwargs)`
-TRUNCATE function.
+TRUNCATE function - **Cắt bỏ** các chữ số thập phân sau vị trí `decimal` (không làm tròn, chỉ cắt bỏ) (ví dụ: Truncate(3.14159, 2) → 3.14)
 
 **Signature:**
 ```python
@@ -323,7 +323,7 @@ q = frappe.qb.from_(Item).select(
 ---
 
 ### 2.7. `GroupConcat(column, alias=None)`
-GROUP_CONCAT function (MariaDB) hoặc STRING_AGG (PostgreSQL).
+GROUP_CONCAT function (MariaDB) hoặc STRING_AGG (PostgreSQL) - **Nối tất cả giá trị** của một cột trong nhóm thành một chuỗi, cách nhau bởi dấu phẩy (dùng trong GROUP BY)
 
 **Tự động chọn function phù hợp:**
 - **MariaDB**: `GROUP_CONCAT(column)`
@@ -360,7 +360,7 @@ q = (
 ---
 
 ### 2.8. `Match(column, *args, **kwargs)`
-MATCH AGAINST function (MariaDB) hoặc TO_TSVECTOR (PostgreSQL).
+MATCH AGAINST function (MariaDB) hoặc TO_TSVECTOR (PostgreSQL) - **Tìm kiếm full-text** trong cột (tìm kiếm nhanh trong văn bản dài, cần index full-text)
 
 **Tự động chọn function phù hợp:**
 - **MariaDB**: `MATCH(column) AGAINST(...)`
@@ -389,7 +389,7 @@ q = frappe.qb.from_(Item).select("*").where(
 ---
 
 ### 2.9. `CombineDatetime(datepart, timepart, alias=None)`
-Kết hợp date và time thành datetime.
+Kết hợp date và time thành datetime - **Ghép 2 cột date và time** thành một giá trị datetime (ví dụ: "2024-01-01" + "10:30:00" → "2024-01-01 10:30:00")
 
 **Tự động chọn function phù hợp:**
 - **MariaDB**: `TIMESTAMP(date, time)`
@@ -418,7 +418,7 @@ q = frappe.qb.from_(Order).select(
 ---
 
 ### 2.10. `DateFormat(date, format, alias=None)`
-Format date theo format string.
+Format date theo format string - **Định dạng ngày tháng** theo pattern chỉ định (ví dụ: "%Y-%m-%d" → "2024-01-01", "%d/%m/%Y" → "01/01/2024")
 
 **Tự động chọn function phù hợp:**
 - **MariaDB**: `DATE_FORMAT(date, format)`
@@ -447,7 +447,7 @@ q = frappe.qb.from_(Order).select(
 ---
 
 ### 2.11. `YearWeek(term)`
-YEARWEEK function.
+YEARWEEK function - **Trả về năm và tuần** dưới dạng số (ví dụ: 202401 = năm 2024, tuần 1)
 
 **Signature:**
 ```python
@@ -470,7 +470,7 @@ q = frappe.qb.from_(Order).select(
 ---
 
 ### 2.12. `UnixTimestamp(field, alias=None)`
-UNIX_TIMESTAMP function.
+UNIX_TIMESTAMP function - **Chuyển đổi date/datetime thành Unix timestamp** (số giây tính từ 1/1/1970 00:00:00 UTC)
 
 **Tự động chọn function phù hợp:**
 - **MariaDB**: `UNIX_TIMESTAMP(date)`
@@ -499,7 +499,7 @@ q = frappe.qb.from_(Order).select(
 ---
 
 ### 2.13. `Cast_(value, as_type, alias=None)`
-CAST function với xử lý đặc biệt cho MariaDB (VARCHAR cast).
+CAST function với xử lý đặc biệt cho MariaDB (VARCHAR cast) - **Chuyển đổi kiểu dữ liệu** (giống Cast, nhưng có xử lý đặc biệt cho VARCHAR trong MariaDB vì MariaDB không hỗ trợ VARCHAR cast trực tiếp)
 
 **Signature:**
 ```python
@@ -535,7 +535,7 @@ q = frappe.qb.from_(Item).select(
 Các hàm helper để tính aggregate trên một DocType với filters:
 
 ### 3.1. `_max(dt, fieldname, filters=None, **kwargs)`
-Tính MAX của một field trong DocType.
+Tính MAX của một field trong DocType - **Helper function để tìm giá trị lớn nhất** của một field trong DocType với filters (trả về số, không phải query object)
 
 **Signature:**
 ```python
@@ -556,7 +556,7 @@ max_rate = _max("Item", "standard_rate", filters={"disabled": 0})
 ---
 
 ### 3.2. `_min(dt, fieldname, filters=None, **kwargs)`
-Tính MIN của một field trong DocType.
+Tính MIN của một field trong DocType - **Helper function để tìm giá trị nhỏ nhất** của một field trong DocType với filters (trả về số, không phải query object)
 
 **Signature:**
 ```python
@@ -574,7 +574,7 @@ min_rate = _min("Item", "standard_rate", filters={"disabled": 0})
 ---
 
 ### 3.3. `_avg(dt, fieldname, filters=None, **kwargs)`
-Tính AVG của một field trong DocType.
+Tính AVG của một field trong DocType - **Helper function để tính trung bình** của một field trong DocType với filters (trả về số, không phải query object)
 
 **Signature:**
 ```python
@@ -592,7 +592,7 @@ avg_rate = _avg("Item", "standard_rate", filters={"disabled": 0})
 ---
 
 ### 3.4. `_sum(dt, fieldname, filters=None, **kwargs)`
-Tính SUM của một field trong DocType.
+Tính SUM của một field trong DocType - **Helper function để tính tổng** của một field trong DocType với filters (trả về số, không phải query object)
 
 **Signature:**
 ```python
