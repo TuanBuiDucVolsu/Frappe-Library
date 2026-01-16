@@ -117,15 +117,6 @@
 
 ---
 
-## 🧪 Ví dụ nội dung mỗi file
-- Mô tả vấn đề
-- Phân tích logic
-- Ưu / nhược điểm
-- Code sample (nếu có)
-- Lưu ý production
-
----
-
 ## 🛠️ Công nghệ sử dụng
 - Frappe Framework
 - ERPNext
