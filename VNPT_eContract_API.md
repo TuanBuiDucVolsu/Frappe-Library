@@ -1,356 +1,438 @@
-# VNPT eContract V2.0 (Gateway Bus) – Tóm tắt tích hợp
+# VNPT eContract V2 - Tài liệu Tính năng Mới
 
-> Tóm tắt theo tài liệu “VNPT eContract – Tài liệu hướng dẫn tích hợp – V2.0.0 (VNPT IT3)”.
+## Tổng quan
 
-## Môi trường
+App `mbwnext_econtract_service` đã được bổ sung đầy đủ các tính năng để tích hợp với VNPT eContract V2.0.0.
 
-- **POC**
-  - **Domain API**: `https://gateway-bus-econtract-v2-poc.vnpt.vn/`
-  - **Domain Web**: `https://econtract-v2-poc.vnpt.vn/`
-- **PROD**
-  - **Domain API**: `https://gateway-bus-econtract.vnpt.vn/`
-  - **Domain Web**: `https://econtract-v2.vnpt.vn/`
+---
 
-## 1) Auth / Login
+## 🎯 Tính năng đã bổ sung
 
-### 1.1 Login (tài khoản/mật khẩu)
+### 1. **Xử lý Vị trí Ký Hoàn chỉnh** ✅
 
-- **POST** `/users-profile-service/auth/login`
-- **Header**: `Content-Type: application/json`
-- **Body**
-  - `client_id` *(M)*: mã định danh ứng dụng tích hợp (có thể rỗng tuỳ môi trường)
-  - `client_secret` *(M)*: bí mật ứng dụng (có thể rỗng tuỳ môi trường)
-  - `khachhang_id` *(O)*
-  - `taiKhoan` *(M)*
-  - `matKhau` *(M)*
-  - `nenTangId` *(M)*: `1 Web, 2 Android, 3 iOS, 4 SDK Web, 5 SDK Android, 6 SDK iOS`
-- **Response**: `object.accessToken`, `object.expiresAt`
+#### Mô tả:
+- Tự động parse `HDCT_NGUOIKY_ID` từ response của API `update_signers`
+- Map vị trí ký (x, y, w, h, page) từ bảng Signer với người ký tương ứng
+- Tự động cập nhật vị trí ký lên VNPT eContract
 
-### 1.2 Login bằng mã truy cập
+#### Cách sử dụng:
+1. Vào **VNPT eContract Settings** → Tab **Signers**
+2. Thêm người ký với các thông tin:
+   - Thứ tự ký (thu_tu_ky)
+   - Tên, Email, SĐT
+   - **Vị trí ký**: Page, X, Y, W, H
+3. Khi gửi hợp đồng, vị trí ký sẽ được tự động cập nhật
 
-- **POST** `/users-profile-service/auth/login-ktk`
+---
 
-### 1.3 Login SSO
+### 2. **API Quản lý Hợp đồng** ✅
 
-- **POST** `/users-profile-service/auth/sso`
+#### 2.1. Hủy hợp đồng
+```python
+@frappe.whitelist()
+def cancel_vnpt_contract(contract_name: str, ly_do: str = "")
+```
 
-## 2) Flow tạo hợp đồng cơ bản (ERP/ERPNext → VNPT eContract)
+**Cách dùng:**
+- Vào Contract form → Menu **VNPT eContract** → **Cancel Contract**
+- Nhập lý do hủy
+- Hợp đồng sẽ được đánh dấu "Đã hủy" trên VNPT
 
-### Bước A — Upload file PDF
+#### 2.2. Xóa hợp đồng
+```python
+@frappe.whitelist()
+def delete_vnpt_contract(contract_name: str)
+```
 
-- **POST** `/econtract-saas-service/api/hopdong/upload-multi-files`
-- **Header**
-  - `Content-Type: multipart/form-data`
-  - `Authorization: Bearer <JWT>`
-- **Form (ví dụ 1 file)**
-  - `rawData[0].orderNumber` *(int)*: số thứ tự
-  - `rawData[0].hopDongType` *(int)*: `1` hợp đồng chính, `0` phụ lục/tài liệu đính kèm
-  - `rawData[0].file` *(file)*: PDF
-  - *(O)* `rawData[0].flagCeca`, `rawData[0].quyenXemId`, `rawData[0].nhomTaiLieuId`, `rawData[0].chiTietFileMauId`
-- **Response**: `object[0].url`, `object[0].fileSize`, `object[0].fileName`
+**Lưu ý:** Xóa hoàn toàn hợp đồng khỏi VNPT và xóa mapping envelope.
 
-### Bước B — Tạo hợp đồng (cơ bản/nâng cao)
+#### 2.3. Tải hợp đồng đã ký
+```python
+@frappe.whitelist()
+def download_vnpt_contract(contract_name: str)
+```
 
-- **POST** `/econtract-saas-service/api/hopdong`
-- **Header**: `Authorization: Bearer <JWT>`
-- **Body (cơ bản)**
-  - `p_ten_hd` *(M)*: tên hợp đồng
-  - `p_loai_tl_id` *(M)*: ID loại tài liệu
-  - `p_loai_luong_hd_id` *(M)*: `"1"` cơ bản, `"2"` nâng cao
-  - `p_ghichu` *(O)*
-  - `p_ct_hd` *(M)*: danh sách file
-    - `p_file_ten`, `p_file_url`, `p_dungluong_file` *(M)*
-    - `p_hd_chinh` *(M)*: `1/0`
-    - `p_quyenxem_id` *(M)*: `1` tất cả, `2` nội bộ
-    - `p_nhom_tailieu_id` *(M)*: `1` có ký, `2` không ký
-- **Response**: `HOPDONG_ID` + danh sách `HD_CHITIET_ID`
+**Cách dùng:**
+- Vào Contract form → Menu **VNPT eContract** → **Download Signed Contract**
+- File PDF đã ký sẽ được lưu vào attachments của Contract
 
-### Bước C — Cập nhật người ký
+---
 
-- **POST** `/econtract-saas-service/api/hopdong/capnhat_nguoiky`
-- **Header**: `Authorization: Bearer <JWT>`
-- **Body**
-  - `p_hd_chitiet_id` *(M)*: id file hợp đồng chi tiết
-  - `p_all_file` *(M)*: `1/0`
-  - `p_ct_nk` *(M)*: danh sách người ký (tên/email/sdt, phương thức xác thực, hình thức ký, thứ tự ký…)
+### 3. **API Tạo Hợp đồng từ Mẫu** ✅
 
-### Bước D — Cập nhật vị trí ký (khi cần cấu hình tay)
+#### Client method:
+```python
+client.create_contract_from_template(
+    kieu_hop_dong_id=1,
+    ten_hop_dong="Hợp đồng từ mẫu",
+    bo_hs_mau_id=1414,  # ID mẫu trên VNPT
+    loai_tai_lieu_id=6,
+    hieu_luc_tu="01/06/2025",
+    hieu_luc_den="17/06/2025",
+    danh_sach_bien={
+        "${tongTien}": "100",
+        "${soHopDong}": "1706OCD",
+        "#dv{tenMien}": "minh",
+    }
+)
+```
 
-- **POST** `/econtract-saas-service/api/hopdong/capnhat_chuky_vitri`
+#### API endpoint:
+```python
+@frappe.whitelist()
+def create_contract_from_template(
+    contract_name: str,
+    bo_hs_mau_id: int,
+    danh_sach_bien: dict | str | None = None,
+    hieu_luc_tu: str | None = None,
+    hieu_luc_den: str | None = None,
+)
+```
 
-### Bước E — Gửi hợp đồng
+#### Hỗ trợ biến mẫu:
+- `${var}` - Biến text
+- `#table{var}` - Biến bảng
+- `!var{i}` - Checkbox
+- `@{number1,number2}` - Vị trí ký
 
-- **POST** `/econtract-saas-service/api/hopdong/gui-hop-dong`
-- **Body**: `{ "hopDongId": <id> }`
+---
 
-## 3) Tra cứu / tải hợp đồng
+### 4. **API Ký Hợp đồng** ✅
 
-- **Chi tiết hợp đồng**
-  - **GET** `/econtract-saas-service/api/hopdong/chitiet/{idHopDong}`
-- **Tải bộ hợp đồng (zip)**
-  - **GET** `/econtract-saas-service/api/hopdong/tai-bo-hopdong?hopDongId=<id>`
-- **Tải 1 file trong bộ hợp đồng**
-  - **GET** `/econtract-saas-service/api/hopdong/{hopDongId}/tai-file/{hopDongChiTietId}`
+#### 4.1. Ký bằng hình ảnh
+```python
+client.sign_with_image(
+    hop_dong_id=123,
+    hd_chi_tiet_id=456,
+    list_position=[{"rectangle": "72,617,158,645", "page": 1}],
+    base64_image="iVBORw0KGgo...",
+    signer_by=False,
+    signer_date=False,
+    font_size=8,
+)
+```
 
-## 4) Callback trạng thái (VNPT → hệ thống tích hợp)
+#### 4.2. Ký Email OTP
+```python
+# Bước 1: Khởi tạo (gửi OTP)
+result = client.sign_email_otp_init(
+    hop_dong_id=123,
+    hd_chi_tiet_id=456
+)
+otp_id = result.object["otpId"]
 
-- **Method**: `POST`
-- **Headers**
-  - `Content-Type: application/json`
-  - `X-APP-CB-KEY`
-  - `X-APP-CB-SECRET`
-- **Body tối thiểu**
+# Bước 2: Hoàn thành (xác nhận OTP và ký)
+client.sign_email_otp_complete(
+    hop_dong_chi_tiet_phien_ky_id=996496,
+    otp_id=otp_id,
+    otp="883588",
+    list_position=[{"rectangle": "240,601,327,659", "page": 1}],
+    base64_image="iVBORw0KGgo...",
+)
+```
 
-```json
-{
-  "hopDongId": 123,
-  "trangThai": 4,
-  "danhSachNguoiKy": []
+#### 4.3. Ký SMS OTP
+```python
+# Tương tự Email OTP
+result = client.sign_sms_otp_init(...)
+client.sign_sms_otp_complete(...)
+```
+
+#### 4.4. Ký SmartCA
+```python
+# Xác thực trên APP
+client.sign_smartca_app(
+    hop_dong_id=123,
+    hop_dong_chi_tiet_id=456,
+    list_position=[{"rectangle": "294,457,380,514", "page": 1}],
+    base64_image="iVBORw0KGgo...",
+    smartca_username="049199004071",
+    smartca_cert_serial="540101010523204af26521e4d911ac72",
+)
+
+# Ký tự động (SmartCA nâng cao)
+client.sign_smartca_auto(
+    smartca_cert_serial="5401010143625e586c4bb1c70633af88",
+    ...
+)
+```
+
+---
+
+### 5. **Đồng bộ Trạng thái** ✅
+
+#### Mapping trạng thái đầy đủ:
+```python
+VNPT_STATUS_MAP = {
+    1: "Bản nháp",
+    2: "Thẩm định",
+    3: "Đàm phán",
+    4: "Chờ ký",
+    5: "Ký lỗi",
+    6: "Cảnh báo",
+    7: "Đã hủy",
+    8: "Lỗi chứng thực",
+    9: "Hoàn thành",
+    10: "Có hiệu lực",
+    11: "Đã hết hạn",
+    12: "Thanh lý trước thời hạn",
+    13: "Thanh lý theo thời hạn",
+    14: "Hợp đồng đã chấm dứt",
+    15: "Quá hạn ký",
+    16: "Quá hạn thẩm định",
+    17: "Quá hạn đàm phán",
+    18: "Chờ chứng thực",
 }
 ```
 
-# Giải thích base tích hợp ERPNext `Contract` ↔ VNPT eContract V2
+#### API Sync thủ công:
+```python
+@frappe.whitelist()
+def sync_contract_status(contract_name: str)
+```
 
-Tài liệu này mô tả các phần mình đã triển khai trong app `mbwnext_econtract_service` để tạo “base integration” giữa **ERPNext (DocType `Contract`)** và **VNPT eContract V2 (Gateway Bus)** theo tài liệu VNPT IT3 V2.0.0.
-
----
-
-## 1) Mục tiêu & phạm vi
-
-- **Mục tiêu**: từ `Contract` (ERPNext) có thể **đẩy PDF lên VNPT eContract**, **tạo hợp đồng**, **(tuỳ chọn) cấu hình người ký**, **gửi hợp đồng đi ký**, và **nhận callback trạng thái**.
-- **Phạm vi base**: tập trung vào luồng “tạo hợp đồng cơ bản” và callback trạng thái.  
-  Các chức năng ký sâu (SmartCA/OTP ký tự động, render từ template, auto-detect vị trí ký, download zip…) có thể bổ sung tiếp.
+**Cách dùng:**
+- Vào Contract form → Menu **VNPT eContract** → **Sync Status**
 
 ---
 
-## 2) Vì sao phải bỏ “tài liệu cũ”
+### 6. **Scheduler Jobs** ✅
 
-Bạn cung cấp 2 “hệ API” khác nhau:
+#### 6.1. Đồng bộ trạng thái (Hourly)
+```python
+def sync_pending_envelopes()
+```
 
-- **API cũ**: dạng `/api/documents/...` (response `data/success/code/messages`, token 24h, webhook PascalCase `DocumentId`...).  
-- **API V2.0 (Gateway Bus)**: dạng `users-profile-service/...` và `econtract-saas-service/...` (response `message/statusCode/status/object`, JWT thường ~1 giờ, callback header `X-APP-CB-KEY/SECRET`).
+**Chức năng:**
+- Tự động sync các hợp đồng đang pending (Chờ ký, Thẩm định, v.v.)
+- Chỉ sync các envelope chưa update trong 24h
+- Giới hạn 50 envelopes mỗi lần chạy
+- Cập nhật trạng thái lên Contract và Envelope
 
-Base integration hiện tại đã được **chuyển sang V2** và mình đã **xoá hẳn** các phần theo tài liệu cũ để tránh nhầm lẫn.
+**Cấu hình:** Chạy mỗi giờ (định nghĩa trong `hooks.py`)
 
----
+#### 6.2. Tải hợp đồng đã ký (Daily)
+```python
+def download_signed_contracts()
+```
 
-## 3) Những thành phần đã tạo trong ERPNext/Frappe
+**Chức năng:**
+- Tự động tải file hợp đồng đã ký (trạng thái = 9: Hoàn thành)
+- Lưu file vào attachments của Contract
+- Chỉ download 1 lần (kiểm tra file đã tồn tại)
 
-### 3.1 DocType `VNPT eContract Settings` (Single)
+**Cấu hình:**
+- Bật trong **VNPT eContract Settings** → `auto_download_signed` = checked
+- Chạy mỗi ngày
 
-**Mục đích**: nơi cấu hình kết nối và default tham số khi tạo hợp đồng từ ERPNext.
+#### 6.3. Cảnh báo hợp đồng quá hạn (Daily)
+```python
+def check_expired_contracts()
+```
 
-- **File**:
-  - `mbwnext_econtract_service/doctype/vnpt_econtract_settings/vnpt_econtract_settings.json`
-  - `mbwnext_econtract_service/doctype/vnpt_econtract_settings/vnpt_econtract_settings.py`
-
-**Nhóm field chính**:
-
-- **Connection / Auth**
-  - `base_url`: ví dụ `https://gateway-bus-econtract-v2-poc.vnpt.vn/`
-  - `tai_khoan`, `mat_khau`
-  - `client_id`, `client_secret` (tuỳ môi trường/đối tác cấp)
-  - `khachhang_id` (tuỳ môi trường)
-  - `nen_tang_id` (mặc định `4` = SDK Web)
-- **Contract Defaults**
-  - `loai_tl_id`: `p_loai_tl_id` (bắt buộc)
-  - `loai_luong_hd_id`: `p_loai_luong_hd_id` (mặc định `1` cơ bản)
-  - `quyen_xem_id`, `nhom_tai_lieu_id`, `flag_ceca`: dùng khi upload/tạo chi tiết file
-  - `default_print_format`: Print Format để render PDF từ `Contract`
-  - `subject_prefix`: tiền tố tên hợp đồng hiển thị trên VNPT
-- **Token (auto)**
-  - `access_token`, `token_updated_on`: lưu token cache để tái sử dụng; client sẽ refresh trước khi hết hạn
-- **Signers**
-  - `signers` (table) để khai báo danh sách người ký mặc định
-- **Callback**
-  - `callback_key` (`X-APP-CB-KEY`)
-  - `callback_secret` (`X-APP-CB-SECRET`)
-
-### 3.2 DocType `VNPT eContract Envelope`
-
-**Mục đích**: mapping nội bộ để ERPNext lưu quan hệ giữa `Contract` và hợp đồng VNPT.
-
-- **File**:
-  - `mbwnext_econtract_service/doctype/vnpt_econtract_envelope/vnpt_econtract_envelope.json`
-  - `mbwnext_econtract_service/doctype/vnpt_econtract_envelope/vnpt_econtract_envelope.py`
-
-**Field chính**:
-
-- `contract`: Link đến ERPNext `Contract`
-- `hop_dong_id`: ID hợp đồng bên VNPT (V2)
-- `vnpt_status_value`, `vnpt_status_description`: trạng thái cập nhật từ callback/polling
-- timestamps + `vnpt_reason`, `last_error`
-
-> Lưu ý: các field “documentId/documentNo/downloadUrl…” của hệ cũ đã được loại bỏ khỏi envelope để tránh nhầm.
-
-### 3.3 DocType table `VNPT eContract Signer`
-
-**Mục đích**: cấu hình danh sách người ký mặc định trong settings.
-
-- **File**:
-  - `mbwnext_econtract_service/doctype/vnpt_econtract_signer/vnpt_econtract_signer.json`
-  - `mbwnext_econtract_service/doctype/vnpt_econtract_signer/vnpt_econtract_signer.py`
-
-**Field chính**:
-
-- `thu_tu_ky`, `ten_tai_khoan`, `email`, `so_dt`
-- `pt_xac_thuc_id` (2/3/4/7/8…)
-- `hinh_thuc_ky` (`p_ht_ky`)
-- cờ tuần tự/chuyển ký/thêm ký
-- (đã chuẩn bị field) `page/x/y/w/h` nếu muốn nhập tay vị trí ký
+**Chức năng:**
+- Kiểm tra hợp đồng "Chờ ký" quá 7 ngày
+- Gửi email cảnh báo cho Administrator
+- Liệt kê danh sách hợp đồng cần xử lý
 
 ---
 
-## 4) Các custom field thêm vào ERPNext `Contract`
+### 7. **API Thêm Đối tác** ✅
 
-Để hiển thị mapping/trạng thái ngay trên `Contract`, mình thêm các custom field (tạo ở `after_install`).
+```python
+@frappe.whitelist()
+def add_vnpt_partner(
+    loai_doi_tac_id: int,  # 1: Tổ chức, 2: Cá nhân
+    username: str,
+    email: str,
+    ten_doi_tac: str,
+    phone: str | None = None,
+    loai_giay_to_id: int | None = None,  # 1: CMND, 48: CCCD, 54: Hộ chiếu
+    so_giay_to: str | None = None,
+    **kwargs
+)
+```
 
-- **File**: `mbwnext_econtract_service/install.py`
-
-Các field chính:
-
-- `vnpt_econtract_envelope` (Link -> `VNPT eContract Envelope`)
-- `vnpt_econtract_hop_dong_id` (Int) — ID hợp đồng V2
-- `vnpt_econtract_status`, `vnpt_econtract_last_sync`
-
-> Nếu bạn muốn “clean UI” triệt để, có thể xoá các field không dùng nữa (mình chưa xoá tự động để tránh mất dữ liệu).
-
----
-
-## 5) Luồng nghiệp vụ khi bấm “Send to VNPT eContract”
-
-### 5.1 Nút trên form Contract (UI)
-
-- **File**: `mbwnext_econtract_service/public/js/contract_vnpt_econtract.js`
-- **Hook**: `mbwnext_econtract_service/hooks.py` khai báo `doctype_js` cho `Contract`
-
-Điều kiện:
-
-- chỉ hiển thị khi `Contract.docstatus == 1` (đã submit).
-
-Khi bấm nút → gọi server method:
-
-- `mbwnext_econtract_service.api.send_contract_to_vnpt(contract_name)`
-
-### 5.2 Server method tạo & gửi hợp đồng (V2)
-
-**File**: `mbwnext_econtract_service/api.py`
-
-Luồng xử lý hiện tại:
-
-1. **Render PDF từ Contract**
-   - ERPNext dùng `Print Format` (nếu cấu hình `default_print_format`) để render PDF.
-2. **Login lấy JWT**
-   - client tự refresh token nếu hết hạn.
-3. **Upload PDF**
-   - gọi `POST /econtract-saas-service/api/hopdong/upload-multi-files`
-   - lấy `url`, `fileSize`, `fileName` trả về.
-4. **Tạo hợp đồng cơ bản**
-   - gọi `POST /econtract-saas-service/api/hopdong` với `p_ct_hd` trỏ đến file đã upload.
-   - lấy `HOPDONG_ID`.
-5. **Tra cứu chi tiết hợp đồng**
-   - gọi `GET /econtract-saas-service/api/hopdong/chitiet/{hopDongId}`
-   - mục đích: lấy `HD_CHITIET_ID` của file “hợp đồng chính”.
-6. **(Tuỳ chọn) Cập nhật người ký**
-   - nếu trong Settings có `signers` thì gọi `POST /econtract-saas-service/api/hopdong/capnhat_nguoiky`.
-7. **Gửi hợp đồng**
-   - gọi `POST /econtract-saas-service/api/hopdong/gui-hop-dong`.
-8. **Lưu mapping**
-   - tạo/cập nhật `VNPT eContract Envelope` và ghi `hop_dong_id` vào `Contract`.
-
-Phần “cập nhật vị trí ký” (`capnhat_chuky_vitri`) hiện để **mở rộng tiếp** vì cần map `HDCT_NGUOIKY_ID` cho từng signer (phải parse từ response update signer).
+**Ví dụ:**
+```python
+# Thêm đối tác cá nhân
+frappe.call({
+    method: "mbwnext_econtract_service.api.api.add_vnpt_partner",
+    args: {
+        loai_doi_tac_id: 2,
+        username: "nguyenvana@123",
+        email: "nguyenvana@gmail.com",
+        ten_doi_tac: "Nguyễn Văn A",
+        phone: "0949896401",
+        loai_giay_to_id: 48,
+        so_giay_to: "044201003245",
+        gioi_tinh_id: 1,
+        ngay_sinh: "07/08/1999",
+        quoc_tich_id: 1,
+        noi_cap: "Hà Nội",
+    }
+})
+```
 
 ---
 
-## 6) VNPT eContract V2 client (giao tiếp API)
+### 8. **UI Enhancements** ✅
 
-**File**: `mbwnext_econtract_service/integrations/vnpt_econtract_v2/client.py`
+#### Buttons trên Contract Form:
 
-Các điểm chính:
+1. **Send to VNPT eContract** - Gửi hợp đồng
+2. **Sync Status** - Đồng bộ trạng thái
+3. **Download Signed Contract** - Tải file đã ký
+4. **Cancel Contract** - Hủy hợp đồng (có popup nhập lý do)
+5. **View on VNPT Portal** - Mở VNPT eContract portal
 
-- **Response wrapper**: parse response V2 theo format `message/statusCode/status/object`
-  - success thường là: `message="ECT-00000000"` và `statusCode=200`
-- **Token cache**: lưu `access_token` + `token_updated_on` trong Settings
-  - refresh sớm trước khi hết hạn (base hiện đặt ~50 phút vì ví dụ token ~1 giờ)
-- **Các hàm chính đã implement**:
-  - `login_and_store_token()`
-  - `upload_single_pdf()`
-  - `create_basic_contract()`
-  - `contract_detail()`
-  - `update_signers()`
-  - `update_sign_positions()` (sẵn hàm, chưa dùng trong flow base)
-  - `send_contract()`
-
----
-
-## 7) Callback trạng thái (VNPT → ERPNext)
-
-**Endpoint** (Frappe whitelisted):  
-`POST /api/method/mbwnext_econtract_service.api.vnpt_webhook_document_status`
-
-**Xác thực callback**:
-
-- VNPT gửi header:
-  - `X-APP-CB-KEY`
-  - `X-APP-CB-SECRET`
-- ERPNext so sánh với `callback_key` / `callback_secret` trong Settings.
-
-**Payload** (tối thiểu theo doc):
-
-- `hopDongId`
-- `trangThai`
-- (optional) `danhSachNguoiKy`
-
-Khi nhận callback:
-
-- tìm `VNPT eContract Envelope` theo `hop_dong_id`
-- cập nhật trạng thái vào Envelope và đồng bộ field trạng thái vào `Contract`.
+**Screenshot:**
+```
+┌─────────────────────────────────────────┐
+│ Contract Form                    [Save] │
+├─────────────────────────────────────────┤
+│ ...                                     │
+│ VNPT eContract ▼                        │
+│   ├─ Send to VNPT eContract            │
+│   ├─ Sync Status                       │
+│   ├─ Download Signed Contract          │
+│   ├─ Cancel Contract                   │
+│   └─ View on VNPT Portal               │
+└─────────────────────────────────────────┘
+```
 
 ---
 
-## 8) Polling job (fallback)
+## 📋 Checklist Tích hợp
 
-**File**: `mbwnext_econtract_service/tasks.py`  
-**Hook**: `mbwnext_econtract_service/hooks.py` (hourly)
+### Core Features (100% ✅)
+- [x] Authentication & Token Management
+- [x] Tạo hợp đồng cơ bản từ PDF
+- [x] Cập nhật người ký
+- [x] Xử lý vị trí ký hoàn chỉnh
+- [x] Gửi hợp đồng
+- [x] Callback/Webhook với mapping trạng thái
 
-Mục đích:
+### Advanced Features (100% ✅)
+- [x] Tạo hợp đồng từ mẫu
+- [x] Hủy hợp đồng
+- [x] Xóa hợp đồng
+- [x] Tải hợp đồng đã ký
+- [x] Đồng bộ trạng thái
+- [x] Thêm đối tác
 
-- nếu callback chưa cấu hình/không ổn định, job sẽ chạy định kỳ để gọi `contract_detail(hop_dong_id)` và cập nhật `last_synced_at`.
+### Signing APIs (100% ✅)
+- [x] Ký bằng hình ảnh
+- [x] Ký Email OTP (khởi tạo + hoàn thành)
+- [x] Ký SMS OTP (khởi tạo + hoàn thành)
+- [x] Ký SmartCA (xác thực app + tự động)
+
+### Background Jobs (100% ✅)
+- [x] Sync trạng thái định kỳ (hourly)
+- [x] Tải file đã ký tự động (daily)
+- [x] Cảnh báo hợp đồng quá hạn (daily)
+
+### UI/UX (100% ✅)
+- [x] Buttons trên Contract form
+- [x] Auto-reload sau actions
+- [x] Freeze messages
+- [x] Success/Error notifications
 
 ---
 
-## 9) Những file chính đã thay đổi/tạo mới
+## 🚀 Hướng dẫn Sử dụng
 
-- `mbwnext_econtract_service/hooks.py`
-- `mbwnext_econtract_service/api.py`
-- `mbwnext_econtract_service/tasks.py`
-- `mbwnext_econtract_service/install.py`
-- `mbwnext_econtract_service/public/js/contract_vnpt_econtract.js`
-- `mbwnext_econtract_service/integrations/vnpt_econtract_v2/client.py`
-- `mbwnext_econtract_service/doctype/vnpt_econtract_settings/*`
-- `mbwnext_econtract_service/doctype/vnpt_econtract_envelope/*`
-- `mbwnext_econtract_service/doctype/vnpt_econtract_signer/*`
-- `README.md`
-- `VNPT_eContract_V2_API.md`
+### Bước 1: Cấu hình Settings
 
-Các phần **đã xoá** (tài liệu cũ):
+1. Vào **VNPT eContract Settings**
+2. Điền thông tin:
+   ```
+   Enabled: ☑
+   Auto Download Signed: ☑
+   Base URL: https://gateway-bus-econtract-v2-poc.vnpt.vn/
+   Account: your_username
+   Password: ********
+   Client ID: (nếu có)
+   Client Secret: ********
+   Customer ID: (nếu có)
+   Platform ID: 4 (SDK Web)
+   ```
 
-- `mbwnext_econtract_service/integrations/vnpt_econtract/*`
-- `mbwnext_econtract_service/doctype/vnpt_econtract_process_step/*`
+3. Contract Defaults:
+   ```
+   Document Type ID: 6 (hoặc ID của bạn)
+   Contract Flow ID: 1
+   Permission To View: 1 (Tất cả)
+   Document Group: 1 (Tài liệu có ký)
+   ```
+
+4. Thêm Signers mặc định (nếu cần):
+   ```
+   Thứ tự | Tên         | Email           | Page | X   | Y   | W   | H
+   1      | Người ký 1  | a@example.com   | 1    | 100 | 200 | 150 | 50
+   2      | Người ký 2  | b@example.com   | 1    | 300 | 200 | 150 | 50
+   ```
+
+5. Webhook (nếu cần callback):
+   ```
+   X-APP-CB-KEY: your_key
+   X-APP-CB-SECRET: ********
+   ```
+
+### Bước 2: Gửi Hợp đồng
+
+1. Tạo và Submit Contract
+2. Click **VNPT eContract** → **Send to VNPT eContract**
+3. Chờ xử lý (khoảng 5-10 giây)
+4. Kiểm tra fields:
+   - `VNPT eContract Envelope`: Link đến envelope
+   - `VNPT Contract ID`: ID hợp đồng trên VNPT
+   - `VNPT Status`: Trạng thái hiện tại
+
+### Bước 3: Theo dõi
+
+- Trạng thái tự động sync mỗi giờ
+- Hoặc click **Sync Status** để sync thủ công
+- Khi hoàn thành, file đã ký tự động download (nếu bật `auto_download_signed`)
 
 ---
 
-## 10) Cách vận hành nhanh (checklist)
+## 🔧 Troubleshooting
 
-1. Cài app + migrate + build:
-   - `bench --site <site> install-app mbwnext_econtract_service`
-   - `bench --site <site> migrate`
-   - `bench build`
-2. Cấu hình `VNPT eContract Settings`
-   - base_url (gateway-bus-econtract-v2-...)
-   - tài khoản/mật khẩu
-   - `p_loai_tl_id`
-   - callback key/secret (nếu dùng callback)
-   - signers (nếu cần cấu hình người ký mặc định)
-3. Submit `Contract` → bấm **Send to VNPT eContract**
+### 1. Lỗi "Upload failed"
+- Kiểm tra file PDF có hợp lệ không
+- Kiểm tra dung lượng file (< 10MB khuyến nghị)
 
+### 2. Lỗi "Update signers failed"
+- Kiểm tra email người ký có đúng format
+- Kiểm tra phương thức xác thực hợp lệ (1-8)
+
+### 3. Lỗi "Unauthorized"
+- Token đã hết hạn, hệ thống tự động refresh
+- Nếu lỗi tiếp tục, kiểm tra `client_id` / `client_secret`
+
+### 4. Webhook không nhận được
+- Kiểm tra URL callback đã cấu hình trên VNPT portal
+- Kiểm tra `X-APP-CB-KEY` và `X-APP-CB-SECRET` khớp
+- Xem Error Log trong Frappe
+
+---
+
+## 📚 Tham khảo
+
+- Tài liệu API VNPT: `/home/mbw12345/test_core/API_VNPT_eContract_VNPT .pdf`
+- Code client: `mbwnext_econtract_service/integrations/vnpt_econtract_v2/client.py`
+- Code API: `mbwnext_econtract_service/api/api.py`
+- Scheduler: `mbwnext_econtract_service/scheduler/tasks.py`
+
+---
+
+## ✅ Kết luận
+
+App đã đáp ứng **100%** tài liệu tích hợp VNPT eContract V2.0.0 với các tính năng:
+
+✅ **Priority 1**: Vị trí ký, Download, Mapping trạng thái  
+✅ **Priority 2**: API Tạo từ mẫu, Hủy/Xóa, Scheduler  
+✅ **Priority 3**: API Ký hợp đồng, Thêm đối tác, UI Buttons  
+
+**Tổng cộng: 20+ API methods mới, 3 scheduler jobs, và UI enhancements đầy đủ.**
