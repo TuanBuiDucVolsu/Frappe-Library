@@ -275,16 +275,4 @@ Chi tiết trả hàng phụ thuộc cấu hình ERPNext (Return, Credit Note, l
 | **Offline – đồng bộ thất bại** | Kiểm tra mạng và đăng nhập còn hợp lệ; mở Offline Invoices xem lỗi từng hóa đơn; thử Sync lại hoặc liên hệ quản trị. |
 | **In không ra** | Kiểm tra Print Format và máy in trong POS Profile; thử in từ Invoice History; kiểm tra quyền in trên ERPNext. |
 
----
-
-## Tài liệu bổ sung
-
-- **Offers & Promotions**: [OFFERS_AND_PROMOTIONS.md](OFFERS_AND_PROMOTIONS.md)
-- **Offline & Sync**: [OFFLINE_SYNC.md](OFFLINE_SYNC.md)
-- **Pricing & Submission**: [PRICING_AND_SUBMISSION.md](PRICING_AND_SUBMISSION.md)
-- **Wallet / Loyalty**: [Wallet-Loyalty-User-Guide.md](Wallet-Loyalty-User-Guide.md)
-- **Localization**: [LOCALIZATION.md](LOCALIZATION.md)
-
----
-
 *Tài liệu này mô tả cách sử dụng POS Next dựa trên luồng nghiệp vụ trong ứng dụng. Một số mục có thể khác nhẹ tùy phiên bản và cấu hình site.*
