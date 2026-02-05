@@ -274,5 +274,3 @@ Chi tiết trả hàng phụ thuộc cấu hình ERPNext (Return, Credit Note, l
 | **Thanh toán báo lỗi** | Kiểm tra đã chọn khách (nếu bắt buộc); kiểm tra số tiền và mode of payment; xem thông báo lỗi chi tiết trong dialog. |
 | **Offline – đồng bộ thất bại** | Kiểm tra mạng và đăng nhập còn hợp lệ; mở Offline Invoices xem lỗi từng hóa đơn; thử Sync lại hoặc liên hệ quản trị. |
 | **In không ra** | Kiểm tra Print Format và máy in trong POS Profile; thử in từ Invoice History; kiểm tra quyền in trên ERPNext. |
-
-*Tài liệu này mô tả cách sử dụng POS Next dựa trên luồng nghiệp vụ trong ứng dụng. Một số mục có thể khác nhẹ tùy phiên bản và cấu hình site.*
