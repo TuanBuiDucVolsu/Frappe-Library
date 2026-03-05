@@ -87,7 +87,7 @@ Bài tập thực hành trên môi trường ERPNext (dev/sandbox) để nhân v
 
 ---
 
-## Bài 2.2 – Luồng có báo giá (RFQ → Supplier Quotation → PO)
+## Bài 2.2 – Luồng có báo giá (RFQ (Request for Quotation) → Supplier Quotation → PO)
 
 **Mục tiêu:** Làm quen với bước RFQ và Supplier Quotation trước khi đặt hàng.
 
