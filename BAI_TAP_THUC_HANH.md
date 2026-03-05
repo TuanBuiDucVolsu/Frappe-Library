@@ -237,7 +237,7 @@ Bài tập thực hành trên môi trường ERPNext (dev/sandbox) để nhân v
 
 **Kiểm tra:**
 
-- Đáp án tham chiếu tài liệu: DAO_TAO_NGHIEP_VU_BAN_HANG_ERPNext.md, DAO_TAO_NGHIEP_VU_MUA_HANG_ERPNext.md, DAO_TAO_NGHIEP_VU_KHO_ERPNext.md.
+- Đáp án tham chiếu tài liệu: SELLING.md, BUYING.md, STOCK.md.
 
 ---
 
