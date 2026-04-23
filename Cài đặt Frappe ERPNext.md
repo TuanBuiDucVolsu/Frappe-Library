@@ -4,13 +4,13 @@
 
 Làm theo hướng dẫn **Step 1 → Step 12** tại:
 
-- [Frappe ERPNext Version 15 trên Ubuntu 22.04 LTS](https://github.com/D-codE-Hub/Frappe-ERPNext-Version-15--in-Ubuntu-22.04-LTS)
+- [Frappe ERPNext Version 15 trên Ubuntu 24.04 LTS]([https://github.com/D-codE-Hub/Frappe-ERPNext-Version-15--in-Ubuntu-22.04-LTS](https://github.com/TuanBuiDucVolsu/-Frappe-ERPNext-Version-15--in-Ubuntu-24.04-LTS))
 
 ## Kiến thức Frappe & ERPNext
 
 | Tài liệu | Mô tả |
 |----------|--------|
-| [FRAPPE_DOCTYPE_SETTINGS](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/FRAPPE_DOCTYPE_SETTINGS.md) | Tìm hiểu về Doctype trong Frappe |
+| [FRAPPE_DOCTYPE_SETTINGS](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/FRAPPE_DOCTYPE_SETTINGS.md) | Tìm hiểu về Doctype trong Frappe (1 Doctype tương ứng với 1 table trong Database) |
 | [FRAPPE_DOCFIELD_PROPERTIES](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/FRAPPE_DOCFIELD_PROPERTIES.md) | Tất cả các thuộc tính của Field trong DocType |
 | [FRAPPE_DEPENDENCY_PROPERTIES_GUIDE](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/FRAPPE_DEPENDENCY_PROPERTIES_GUIDE.md) | Cách sử dụng Dependency Properties trong Frappe |
 | [HOOKS_GUIDE](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/HOOKS_GUIDE.md) | Hooks trong Frappe/ERPNext |
@@ -25,8 +25,11 @@ Làm theo hướng dẫn **Step 1 → Step 12** tại:
 |----------|--------|
 | [SYSTEM_SETTINGS_GUIDE](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/SYSTEM_SETTINGS_GUIDE.md) | Giải thích các trường và chức năng trong **System Settings** của Frappe Framework |
 | [STOCK_SETTINGS_GUIDE](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/STOCK_SETTINGS_GUIDE.md) | Giải thích các trường và chức năng trong **Stock Settings** của ERPNext |
+| [STOCK_SETTINGS_GUIDE](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/STOCK.md) | Giải thích các trường và chức năng trong **Stock** của ERPNext |
 | [BUYING_SETTINGS_GUIDE](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/BUYING_SETTINGS_GUIDE.md) | Giải thích các trường và chức năng trong **Buying Settings** của ERPNext |
+| [BUYING_SETTINGS_GUIDE](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/BUYING.md) | Giải thích các trường và chức năng trong **Buying** của ERPNext |
 | [SELLING_SETTINGS_GUIDE](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/SELLING_SETTINGS_GUIDE.md) | Giải thích các trường và chức năng trong **Selling Settings** của ERPNext |
+| [SELLING_SETTINGS_GUIDE](https://github.com/TuanBuiDucVolsu/Frappe-Library/blob/main/SELLING.md) | Giải thích các trường và chức năng trong **Selling** của ERPNext |
 
 ## Khởi tạo bench để chạy ERPNext
 
@@ -44,7 +47,7 @@ Ví dụ:
 bench init mbw_rtg --frappe-branch version-15
 ```
 
-### Tạo site mới
+### Tạo site mới (1 site sẽ tương ứng với 1 database)
 
 - `--admin-password`: mật khẩu admin (tùy chọn)
 - `--db-root-password`: mật khẩu MariaDB
