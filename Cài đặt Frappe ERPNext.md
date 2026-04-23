@@ -1,4 +1,4 @@
-# Cài đặt ERPNext
+# Cài đặt Frappe/ERPNext
 
 ## Cài đặt môi trường Frappe
 
