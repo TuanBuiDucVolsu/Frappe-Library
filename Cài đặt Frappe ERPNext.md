@@ -4,7 +4,9 @@
 
 Làm theo hướng dẫn **Step 1 → Step 12** tại:
 
-- [Frappe ERPNext Version 15 trên Ubuntu 24.04 LTS]([https://github.com/D-codE-Hub/Frappe-ERPNext-Version-15--in-Ubuntu-22.04-LTS](https://github.com/TuanBuiDucVolsu/-Frappe-ERPNext-Version-15--in-Ubuntu-24.04-LTS))
+- [Frappe ERPNext Version 15 trên Ubuntu 24.04 LTS]([https://github.com/TuanBuiDucVolsu/-Frappe-ERPNext-Version-15--in-Ubuntu-24.04-LTS])
+- [Frappe Documentation]([https://docs.frappe.io/framework/user/en/introduction])
+- [ERPNext Documentation]([https://docs.frappe.io/erpnext/getting-started-with-erpnext])
 
 ## Kiến thức Frappe & ERPNext
 
